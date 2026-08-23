@@ -1,3 +1,5 @@
+"use client";
+
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
@@ -5,32 +7,32 @@ export default function HowToPlay() {
   const steps = [
     {
       number: "01",
-      title: "Get a Clue",
-      desc: "Receive your first cryptographic clue on our website. It could be an image, a riddle, or a hidden message.",
-      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+      title: "Register Your Team",
+      desc: "Head to the registration portal to form your alliance. Secure your spot and receive a unique 6-digit Secret Passcode. Guard it with your life.",
+      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
     },
     {
       number: "02",
-      title: "Explore the Open Web",
-      desc: "Leave the site and investigate open web resources like Wikimedia, OpenStreetMap, or public datasets to find the answer.",
-      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" /></svg>
+      title: "Access the Terminal",
+      desc: "Enter the Game portal and input your Secret Passcode. Our database tracks your progress securely, allowing you to pause, close your browser, and resume the hunt at any time.",
+      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
     },
     {
       number: "03",
-      title: "Solve the Mystery",
-      desc: "Connect the dots. Use open-source tools or hidden image metadata to discover the exact word or coordinate we are looking for.",
-      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>
+      title: "Investigate the Open Web",
+      desc: "You will receive cryptographic clues. Leave the site and investigate open web resources like Wikimedia, OpenStreetMap, or image metadata to find the exact coordinates or names.",
+      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" /></svg>
     },
     {
       number: "04",
-      title: "Unlock the Next Level",
-      desc: "Return to the game portal and enter your discovered answer to unlock the next location in Mahabali's journey.",
-      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+      title: "Submit the Key",
+      desc: "Return to the terminal and enter your discovered answer to unlock the next location. Stuck? You can request a hint, but doing so will reduce the points awarded for that clue.",
+      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
     },
     {
       number: "05",
-      title: "Find Mahabali",
-      desc: "Be the fastest team to complete the entire trail, top the leaderboard, and reclaim the King before Onam ends!",
+      title: "Top the Leaderboard",
+      desc: "Every second and every point counts. Be the fastest team to complete the entire trail, dominate the live leaderboard, and reclaim the King before Onam ends!",
       icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
     }
   ];
@@ -101,8 +103,17 @@ export default function HowToPlay() {
           ))}
         </div>
 
-        {/* Call to Action Button */}
-        <div className="mt-24 flex justify-center relative z-20">
+        {/* Call to Action Buttons */}
+        <div className="mt-24 flex flex-col sm:flex-row justify-center items-center gap-6 relative z-20">
+          
+          <Link href="/about" className="group relative p-[2px] clip-game-button bg-gradient-to-b from-[#D4AF37] to-[#7A5C13] shadow-[0_0_20px_rgba(0,0,0,0.5)] btn-hover-effect transition-all duration-200">
+            <div className="clip-game-button bg-premium-glass px-12 py-5 flex items-center gap-3">
+              <span className="font-sans font-bold tracking-widest text-[13px] uppercase text-[#FDFBF7] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                Register Team
+              </span>
+            </div>
+          </Link>
+
           <Link href="/game" className="group relative p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_40px_rgba(212,175,55,0.4)] animate-heartbeat btn-hover-effect transition-all duration-200">
             <div className="clip-game-button bg-premium-gold px-16 py-5 flex items-center gap-3">
               <span className="font-sans font-extrabold tracking-widest text-[15px] uppercase text-[#2B1B04] drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
@@ -111,6 +122,7 @@ export default function HowToPlay() {
               <svg className="w-5 h-5 text-[#2B1B04] group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
             </div>
           </Link>
+          
         </div>
 
       </section>
