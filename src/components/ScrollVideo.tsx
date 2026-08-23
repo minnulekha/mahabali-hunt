@@ -12,6 +12,9 @@ export default function ScrollVideo() {
   const [textOpacity, setTextOpacity] = useState(0);
   const [textTranslateY, setTextTranslateY] = useState(20);
   
+  // NEW: State for the scroll hint opacity
+  const [scrollHintOpacity, setScrollHintOpacity] = useState(1);
+  
   // Audio defaults to ON (false means NOT muted)
   const [isMuted, setIsMuted] = useState(false);
   const isAudioPlaying = useRef(false);
@@ -123,6 +126,9 @@ export default function ScrollVideo() {
       const maxScroll = containerRef.current.scrollHeight - window.innerHeight;
       const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScroll));
       
+      // Fade out the scroll hint as the user starts scrolling (fades out completely by 300px down)
+      setScrollHintOpacity(Math.max(0, 1 - (scrollTop / 300)));
+
       const videoProgress = Math.min(1, scrollFraction / 0.75);
       const frameIndex = Math.min(frameCount - 1, Math.floor(videoProgress * frameCount)) + 1;
       renderFrame(frameIndex);
@@ -181,6 +187,20 @@ export default function ScrollVideo() {
         <canvas ref={canvasRef} className="w-full h-full block" />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70 pointer-events-none"></div>
+
+        {/* --- NEW: SCROLL INDICATOR HINT --- */}
+        <div 
+          className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-40 transition-opacity duration-300"
+          style={{ opacity: scrollHintOpacity }}
+        >
+          <span className="font-sans text-[9px] md:text-[11px] tracking-[0.4em] uppercase text-[#D4AF37] drop-shadow-md animate-pulse">
+            Scroll to Initiate
+          </span>
+          <svg className="w-5 h-5 md:w-6 md:h-6 text-[#D4AF37] animate-bounce drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </div>
+        {/* ---------------------------------- */}
 
         <button 
           onClick={toggleSound}
