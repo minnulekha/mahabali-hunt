@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Typography */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-cinzel);
+  --font-serif-ornate: var(--font-cinzel-decorative);
+
+  /* Premium Onam Palette */
+  --color-onam-ivory: #FDFBF7;
+  --color-onam-cream: #F3EFE6;
+  --color-onam-green: #0D2B1D; 
+  --color-onam-emerald: #154731;
+  --color-onam-gold: #D4AF37;
+  --color-onam-gold-light: #F3E5AB;
+  --color-onam-orange: #E67E22;
+  --color-onam-maroon: #800000;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+/* Premium Gaming Button Shapes */
+.clip-game-button {
+  clip-path: polygon(
+    12px 0%, 
+    calc(100% - 12px) 0%, 
+    100% 12px, 
+    100% calc(100% - 12px), 
+    calc(100% - 12px) 100%, 
+    12px 100%, 
+    0% calc(100% - 12px), 
+    0% 12px
+  );
+}
+
+/* Rich 3D Gold Gradient for Primary Button */
+.bg-premium-gold {
+  background: linear-gradient(180deg, #F9D976 0%, #E6B941 40%, #B8860B 100%);
+  box-shadow: inset 0px 2px 4px rgba(255, 255, 255, 0.5),
+              inset 0px -4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Rich Dark Glass for Secondary Button */
+.bg-premium-glass {
+  background: linear-gradient(180deg, rgba(80, 70, 40, 0.9) 0%, rgba(20, 20, 15, 0.95) 100%);
+  box-shadow: inset 0px 1px 3px rgba(212, 175, 55, 0.6),
+              inset 0px -3px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Faster, smooth glowing pulse for buttons */
+@keyframes smooth-pulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.04); filter: brightness(1.15); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.animate-heartbeat {
+  /* Sped up to 1.5 seconds for a nice, active game feel */
+  animation: smooth-pulse 1.5s ease-in-out infinite; 
+}
+
+/* Faster, gentle floating animation for the Text */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  /* Sped up from 6s to 3.5s so it's noticeable but still elegant */
+  animation: float 3.5s ease-in-out infinite;
+}
+
+/* Hover Press Effect */
+.btn-hover-effect:hover {
+  animation: none !important;
+  transform: scale(0.96) !important;
+  filter: brightness(1.2);
+}
