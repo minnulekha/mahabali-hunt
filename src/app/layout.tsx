@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Cinzel, Cinzel_Decorative } from "next/font/google";
 import "./globals.css";
+import Preloader from "@/components/Preloader"; // <-- Imported Preloader
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,10 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // Added data-scroll-behavior="smooth" to fix the Next.js transition warning
+    <html lang="en" data-scroll-behavior="smooth">
       <body
         className={`${inter.variable} ${cinzel.variable} ${cinzelDecorative.variable} antialiased bg-onam-ivory text-onam-green`}
       >
+        <Preloader /> {/* <-- Injected the cinematic preloader here */}
         {children}
       </body>
     </html>
