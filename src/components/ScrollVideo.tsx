@@ -12,7 +12,7 @@ export default function ScrollVideo() {
   const [textOpacity, setTextOpacity] = useState(0);
   const [textTranslateY, setTextTranslateY] = useState(20);
   
-  // NEW: State for the scroll hint opacity
+  // State for the scroll hint opacity
   const [scrollHintOpacity, setScrollHintOpacity] = useState(1);
   
   // Audio defaults to ON (false means NOT muted)
@@ -22,6 +22,9 @@ export default function ScrollVideo() {
   const frameCount = 96; 
 
   const currentFrame = (index: number) => {
+    if (index === 1) {
+      return `/mahabali_hero_images/start.png`;
+    }
     if (index === frameCount) {
       return `/mahabali_hero_images/end.png`;
     }
@@ -126,8 +129,8 @@ export default function ScrollVideo() {
       const maxScroll = containerRef.current.scrollHeight - window.innerHeight;
       const scrollFraction = Math.max(0, Math.min(1, scrollTop / maxScroll));
       
-      // Fade out the scroll hint as the user starts scrolling (fades out completely by 300px down)
-      setScrollHintOpacity(Math.max(0, 1 - (scrollTop / 300)));
+      // Fade out the scroll hint smoothly as the user starts scrolling
+      setScrollHintOpacity(Math.max(0, 1 - (scrollTop / 250)));
 
       const videoProgress = Math.min(1, scrollFraction / 0.75);
       const frameIndex = Math.min(frameCount - 1, Math.floor(videoProgress * frameCount)) + 1;
@@ -188,19 +191,19 @@ export default function ScrollVideo() {
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70 pointer-events-none"></div>
 
-        {/* --- NEW: SCROLL INDICATOR HINT --- */}
+        {/* --- HIGH-VISIBILITY, CENTERED SCROLL INDICATOR --- */}
         <div 
-          className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-40 transition-opacity duration-300"
+          className="absolute bottom-[20vh] md:bottom-[25vh] left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none z-40 transition-opacity duration-300"
           style={{ opacity: scrollHintOpacity }}
         >
-          <span className="font-sans text-[9px] md:text-[11px] tracking-[0.4em] uppercase text-[#D4AF37] drop-shadow-md animate-pulse">
+          <span className="font-sans text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase text-[#D4AF37] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-100">
             Scroll to Initiate
           </span>
-          <svg className="w-5 h-5 md:w-6 md:h-6 text-[#D4AF37] animate-bounce drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 md:w-6 md:h-6 text-[#D4AF37] animate-bounce drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
-        {/* ---------------------------------- */}
+        {/* -------------------------------------------------- */}
 
         <button 
           onClick={toggleSound}
@@ -240,7 +243,6 @@ export default function ScrollVideo() {
               <span className="text-xs md:text-sm">✧</span>
             </div>
 
-            {/* Highly Responsive Title Scaling */}
             <h1 
               className="font-[family-name:var(--font-cinzel-decorative)] text-5xl sm:text-7xl md:text-[100px] lg:text-[140px] leading-none tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-[#FFF0B3] via-[#D4AF37] to-[#8C6216] mb-2 font-bold w-full" 
               style={{ filter: "drop-shadow(0px 10px 15px rgba(0,0,0,0.9))" }}
@@ -260,10 +262,8 @@ export default function ScrollVideo() {
               Find the trail. Solve the clues. Find Mahabali.
             </p>
 
-            {/* Highly Responsive Buttons Container */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full max-w-xs sm:max-w-none">
               
-              {/* PRIMARY Game Button (Restored Gold) */}
               <Link href="/game" className="group w-full sm:w-auto p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_40px_rgba(212,175,55,0.4)] animate-heartbeat btn-hover-effect transition-all duration-200 ease-out">
                 <div className="clip-game-button bg-premium-gold px-8 sm:px-10 md:px-12 py-3.5 flex items-center justify-center gap-3 w-full">
                   <span className="font-sans font-extrabold tracking-widest text-[11px] md:text-[13px] uppercase text-[#2B1B04] drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
@@ -273,7 +273,6 @@ export default function ScrollVideo() {
                 </div>
               </Link>
               
-              {/* SECONDARY Game Button (Glass) */}
               <Link href="/how-to-play" className="group w-full sm:w-auto p-[2px] clip-game-button bg-gradient-to-b from-[#D4AF37] to-[#7A5C13] shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-heartbeat btn-hover-effect transition-all duration-200 ease-out" style={{ animationDelay: '0.2s' }}>
                 <div className="clip-game-button bg-premium-glass px-8 sm:px-10 md:px-12 py-3.5 flex items-center justify-center gap-3 w-full">
                   <span className="font-sans font-bold tracking-widest text-[11px] md:text-[13px] uppercase text-[#FDFBF7] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
