@@ -9,7 +9,14 @@ import { supabase } from "@/utils/supabase";
 type Team = { id: string; team_name: string; score: number; current_clue: number; passcode: string };
 type Clue = { id: number; title: string; content: string; answer: string; hint: string };
 
+// --- EVENT TIMESTAMPS (IST) ---
+const EVENT_START = new Date('2026-08-24T19:30:00+05:30').getTime();
+const EVENT_END = new Date('2026-08-28T20:30:00+05:30').getTime();
+
 export default function GamePage() {
+  // Time State
+  const [timeStatus, setTimeStatus] = useState<"loading" | "waiting" | "active" | "ended">("loading");
+
   // Authentication State
   const [team, setTeam] = useState<Team | null>(null);
   const [passcodeInput, setPasscodeInput] = useState("");
@@ -23,7 +30,26 @@ export default function GamePage() {
   const [showHint, setShowHint] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; type: "error" | "success" | null }>({ message: "", type: null });
-  const [totalClues, setTotalClues] = useState(3); // We added 3 clues to the DB
+  const [totalClues, setTotalClues] = useState(3);
+
+  // --- TIME LOCK LOGIC ---
+  useEffect(() => {
+    const checkTime = () => {
+      const now = Date.now();
+      if (now < EVENT_START) {
+        setTimeStatus("waiting");
+      } else if (now >= EVENT_START && now < EVENT_END) {
+        setTimeStatus("active");
+      } else {
+        setTimeStatus("ended");
+      }
+    };
+
+    checkTime(); // Initial check
+    const timer = setInterval(checkTime, 1000); // Check every second
+
+    return () => clearInterval(timer);
+  }, []);
 
   // --- LOGIN LOGIC ---
   const handleLogin = async (e: React.FormEvent) => {
@@ -33,7 +59,6 @@ export default function GamePage() {
     setLoginError("");
 
     try {
-      // 1. Check if the passcode exists in the DB
       const { data: teamData, error: teamError } = await supabase
         .from("teams")
         .select("*")
@@ -42,7 +67,6 @@ export default function GamePage() {
 
       if (teamError || !teamData) throw new Error("Invalid Passcode.");
 
-      // 2. Set the team and fetch their current clue
       setTeam(teamData);
       fetchClue(teamData.current_clue);
 
@@ -66,7 +90,6 @@ export default function GamePage() {
       setShowHint(false);
       setAnswerInput("");
     } else {
-      // If no clue is found for their number, they have finished the game!
       setClue(null);
     }
   };
@@ -86,18 +109,15 @@ export default function GamePage() {
       const newScore = team.score + pointsEarned;
       const nextClueId = team.current_clue + 1;
 
-      // 1. Update the team's progress in the database
       await supabase
         .from("teams")
         .update({ score: newScore, current_clue: nextClueId })
         .eq("id", team.id);
 
-      // 2. Log the action for audit/tie-breakers
       await supabase
         .from("game_logs")
         .insert([{ team_id: team.id, clue_id: clue.id, action_type: 'SOLVED', points_awarded: pointsEarned }]);
 
-      // 3. Progress the UI after a cinematic delay
       setTimeout(() => {
         setTeam({ ...team, score: newScore, current_clue: nextClueId });
         fetchClue(nextClueId);
@@ -114,10 +134,12 @@ export default function GamePage() {
     if (hintsRemaining > 0 && !showHint && team && clue) {
       setHintsRemaining(prev => prev - 1);
       setShowHint(true);
-      // Log hint usage
       await supabase.from("game_logs").insert([{ team_id: team.id, clue_id: clue.id, action_type: 'HINT_USED', points_awarded: 0 }]);
     }
   };
+
+  // Render nothing while calculating initial time to prevent flicker
+  if (timeStatus === "loading") return null;
 
   return (
     <main className="min-h-screen bg-[#0D2B1D] bg-[url('/BG.png')] bg-cover bg-center bg-fixed text-[#FDFBF7] flex flex-col font-sans">
@@ -130,148 +152,188 @@ export default function GamePage() {
       <section className="relative z-10 flex-grow pt-32 pb-20 px-4 md:px-6 flex flex-col items-center justify-center">
         
         {/* ========================================= */}
-        {/* STATE 1: LOGIN SCREEN (Not Authenticated) */}
+        {/* STATE 0: WAITING FOR EVENT TO START       */}
         {/* ========================================= */}
-        {!team && (
-          <div className="w-full max-w-md bg-black/40 backdrop-blur-xl border border-[#D4AF37]/30 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-8 md:p-12 animate-fade-in text-center">
-            <div className="w-16 h-16 mx-auto rounded-full border border-[#D4AF37]/50 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
-              <svg className="w-8 h-8 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+        {timeStatus === "waiting" && (
+          <div className="max-w-xl text-center px-4 animate-float">
+            <div className="w-20 h-20 mx-auto rounded-full border border-red-500/50 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(255,0,0,0.3)]">
+              <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
             </div>
-            
-            <h2 className="font-serif text-2xl md:text-3xl text-[#FDFBF7] mb-2 drop-shadow-md">Access Terminal</h2>
-            <p className="font-sans text-[10px] text-white/50 tracking-[0.2em] uppercase mb-8">Enter your team passcode to resume the hunt</p>
-
-            {loginError && (
-              <div className="mb-6 p-3 bg-red-900/20 border border-red-500/30 rounded text-red-400 text-[10px] tracking-[0.2em] uppercase font-bold">
-                {loginError}
-              </div>
-            )}
-
-            <form onSubmit={handleLogin} className="flex flex-col gap-8">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  value={passcodeInput}
-                  onChange={(e) => setPasscodeInput(e.target.value.toUpperCase())}
-                  placeholder="6-DIGIT CODE"
-                  maxLength={6}
-                  className="w-full bg-transparent border-b border-white/20 pb-4 text-center text-[#D4AF37] font-sans font-bold tracking-[0.4em] text-xl md:text-2xl uppercase placeholder-white/10 focus:outline-none focus:border-[#D4AF37] transition-all duration-300"
-                  autoComplete="off"
-                />
-              </div>
-
-              <button 
-                type="submit" 
-                disabled={isLoggingIn || passcodeInput.length < 6}
-                className={`w-full group relative p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all duration-300 ${isLoggingIn || passcodeInput.length < 6 ? 'opacity-50 cursor-not-allowed' : 'btn-hover-effect'}`}
-              >
-                <div className="clip-game-button bg-premium-gold px-12 py-3.5 flex items-center justify-center">
-                  <span className="font-sans font-extrabold tracking-[0.2em] text-[12px] uppercase text-[#2B1B04]">
-                    {isLoggingIn ? "Authenticating..." : "Initialize"}
-                  </span>
-                </div>
-              </button>
-            </form>
+            <h2 className="font-serif text-3xl md:text-5xl text-red-500 mb-4 tracking-widest uppercase drop-shadow-md">
+              Terminal Locked
+            </h2>
+            <p className="font-sans text-xs md:text-sm text-white/70 tracking-[0.2em] leading-loose max-w-md mx-auto">
+              The hunt has not yet begun. The access terminal will automatically unlock at exactly <strong className="text-[#D4AF37]">7:30 PM IST</strong> on August 28th.
+            </p>
           </div>
         )}
 
         {/* ========================================= */}
-        {/* STATE 2: ACTIVE GAME (Authenticated & Clue exists) */}
+        {/* STATE 4: EVENT ENDED                      */}
         {/* ========================================= */}
-        {team && clue && (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            
-            {/* Top HUD */}
-            <div className="absolute top-24 md:top-28 left-0 w-full px-4 md:px-12 flex justify-between items-start pointer-events-none">
-              <div className="flex flex-col gap-1 md:gap-2">
-                <span className="text-[8px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase text-[#D4AF37]">Team {team.team_name}</span>
-                <div className="flex items-center gap-2 md:gap-4">
-                  <span className="font-serif text-xl md:text-3xl text-[#FDFBF7] drop-shadow-md">{(team.current_clue).toString().padStart(2, '0')}</span>
-                  <div className="w-16 md:w-32 h-[2px] bg-white/10 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 h-full bg-[#D4AF37] transition-all duration-700 shadow-[0_0_15px_#D4AF37]" style={{ width: `${((team.current_clue) / totalClues) * 100}%` }}></div>
+        {timeStatus === "ended" && !(!clue && team) && (
+          <div className="max-w-xl text-center px-4 animate-fade-in">
+            <h2 className="font-serif text-3xl md:text-5xl text-white/50 mb-4 tracking-widest uppercase">
+              Time Expired
+            </h2>
+            <p className="font-sans text-xs md:text-sm text-[#D4AF37] tracking-[0.2em] leading-loose max-w-md mx-auto">
+              The 60-minute window has closed. The trail has gone cold. Check the Leaderboard for the final results!
+            </p>
+            <Link href="/leaderboard" className="inline-block mt-8 text-xs tracking-widest uppercase text-white hover:text-[#D4AF37] transition-colors border border-white/20 hover:border-[#D4AF37] px-6 py-3 rounded">
+              View Leaderboard
+            </Link>
+          </div>
+        )}
+
+        {/* ========================================= */}
+        {/* ACTIVE GAME STATES (Login, Play, Victory) */}
+        {/* ========================================= */}
+        {timeStatus === "active" && (
+          <>
+            {/* LOGIN SCREEN */}
+            {!team && (
+              <div className="w-full max-w-md bg-black/40 backdrop-blur-xl border border-[#D4AF37]/30 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-8 md:p-12 animate-fade-in text-center">
+                <div className="w-16 h-16 mx-auto rounded-full border border-[#D4AF37]/50 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+                  <svg className="w-8 h-8 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                </div>
+                
+                <h2 className="font-serif text-2xl md:text-3xl text-[#FDFBF7] mb-2 drop-shadow-md">Access Terminal</h2>
+                <p className="font-sans text-[10px] text-white/50 tracking-[0.2em] uppercase mb-8">Enter your team passcode to initiate</p>
+
+                {loginError && (
+                  <div className="mb-6 p-3 bg-red-900/20 border border-red-500/30 rounded text-red-400 text-[10px] tracking-[0.2em] uppercase font-bold">
+                    {loginError}
                   </div>
-                  <span className="font-serif text-sm md:text-xl text-white/30">{totalClues.toString().padStart(2, '0')}</span>
-                </div>
-              </div>
-              <div className="flex gap-4 md:gap-8 text-right">
-                <div className="flex flex-col">
-                  <span className="text-[8px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/50 mb-1">Score</span>
-                  <span className="font-serif text-xl md:text-2xl text-[#D4AF37] drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">{team.score}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[8px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/50 mb-1">Hints</span>
-                  <span className="font-serif text-xl md:text-2xl text-[#FDFBF7]">{hintsRemaining}</span>
-                </div>
-              </div>
-            </div>
+                )}
 
-            {/* Main Clue Interface */}
-            <div className={`w-full max-w-3xl transition-all duration-1000 mt-12 md:mt-0 ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-              <div className="flex flex-col items-center text-center">
-                <div className="flex items-center gap-4 mb-4 md:mb-6 text-[#F3E5AB]">
-                  <span className="text-[10px] md:text-xs">✧</span>
-                  <span className="font-sans text-[10px] md:text-xs tracking-[0.4em] font-medium uppercase drop-shadow-md">
-                    {clue.title}
-                  </span>
-                  <span className="text-[10px] md:text-xs">✧</span>
-                </div>
-
-                <p className="font-[family-name:var(--font-cinzel-decorative)] text-[#FDFBF7] text-xl md:text-3xl lg:text-4xl leading-relaxed whitespace-pre-line mb-10 md:mb-16 drop-shadow-lg px-2">
-                  &ldquo;{clue.content}&rdquo;
-                </p>
-
-                <form onSubmit={handleAnswerSubmit} className="w-full max-w-lg mx-auto flex flex-col items-center px-4">
-                  <div className="relative w-full mb-6 md:mb-8">
+                <form onSubmit={handleLogin} className="flex flex-col gap-8">
+                  <div className="relative w-full">
                     <input
                       type="text"
-                      value={answerInput}
-                      onChange={(e) => setAnswerInput(e.target.value)}
-                      disabled={isTransitioning}
-                      placeholder="ENTER THE KEY..."
-                      className="w-full bg-transparent border-b border-white/20 pb-3 md:pb-4 text-center text-[#D4AF37] font-sans font-bold tracking-[0.2em] md:tracking-[0.3em] text-base md:text-lg uppercase placeholder-white/10 focus:outline-none focus:border-[#D4AF37] transition-all duration-300"
+                      value={passcodeInput}
+                      onChange={(e) => setPasscodeInput(e.target.value.toUpperCase())}
+                      placeholder="6-DIGIT CODE"
+                      maxLength={6}
+                      className="w-full bg-transparent border-b border-white/20 pb-4 text-center text-[#D4AF37] font-sans font-bold tracking-[0.4em] text-xl md:text-2xl uppercase placeholder-white/10 focus:outline-none focus:border-[#D4AF37] transition-all duration-300"
                       autoComplete="off"
                     />
-                    <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] shadow-[0_0_15px_#D4AF37] transition-all duration-500 ${answerInput.length > 0 ? 'w-full opacity-100' : 'w-0 opacity-0'}`}></div>
                   </div>
 
-                  <div className="h-6 mb-6 md:mb-8">
-                    {feedback.message && (
-                      <div className={`text-[9px] md:text-[11px] tracking-[0.2em] md:tracking-[0.3em] uppercase font-bold transition-opacity duration-300 ${feedback.type === 'error' ? 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]' : 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]'}`}>
-                        {feedback.message}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col items-center gap-4 md:gap-6 w-full">
-                    <button type="submit" disabled={isTransitioning} className="group relative p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_40px_rgba(212,175,55,0.6)] btn-hover-effect transition-all duration-300 w-full md:w-auto">
-                      <div className="clip-game-button bg-premium-gold px-12 md:px-16 py-3.5 md:py-4 flex items-center justify-center gap-3 w-full">
-                        <span className="font-sans font-extrabold tracking-[0.2em] text-[11px] md:text-[13px] uppercase text-[#2B1B04]">Unlock</span>
-                      </div>
-                    </button>
-
-                    <div className="h-16 md:h-20 w-full flex justify-center items-center">
-                      {!showHint ? (
-                        <button type="button" onClick={handleUseHint} disabled={hintsRemaining === 0 || isTransitioning} className={`font-sans text-[9px] md:text-[10px] tracking-[0.2em] uppercase transition-all flex items-center gap-2 ${hintsRemaining > 0 ? 'text-white/40 hover:text-[#D4AF37]' : 'text-white/10 cursor-not-allowed'}`}>
-                          [ Request Hint ]
-                        </button>
-                      ) : (
-                        <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-md p-3 md:p-4 flex gap-3 md:gap-4 items-start w-full max-w-md animate-fade-in shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                          <span className="text-[#D4AF37] text-sm md:text-lg">💡</span>
-                          <p className="font-sans text-[10px] md:text-xs tracking-wide text-[#FDFBF7]/70 italic text-left leading-relaxed">
-                            {clue.hint}
-                          </p>
-                        </div>
-                      )}
+                  <button 
+                    type="submit" 
+                    disabled={isLoggingIn || passcodeInput.length < 6}
+                    className={`w-full group relative p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all duration-300 ${isLoggingIn || passcodeInput.length < 6 ? 'opacity-50 cursor-not-allowed' : 'btn-hover-effect'}`}
+                  >
+                    <div className="clip-game-button bg-premium-gold px-12 py-3.5 flex items-center justify-center">
+                      <span className="font-sans font-extrabold tracking-[0.2em] text-[12px] uppercase text-[#2B1B04]">
+                        {isLoggingIn ? "Authenticating..." : "Initialize"}
+                      </span>
                     </div>
-                  </div>
+                  </button>
                 </form>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* ACTIVE CLUE */}
+            {team && clue && (
+              <div className="w-full h-full flex flex-col items-center justify-center animate-fade-in">
+                
+                {/* Top HUD */}
+                <div className="absolute top-24 md:top-28 left-0 w-full px-4 md:px-12 flex justify-between items-start pointer-events-none">
+                  <div className="flex flex-col gap-1 md:gap-2">
+                    <span className="text-[8px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase text-[#D4AF37]">Team {team.team_name}</span>
+                    <div className="flex items-center gap-2 md:gap-4">
+                      <span className="font-serif text-xl md:text-3xl text-[#FDFBF7] drop-shadow-md">{(team.current_clue).toString().padStart(2, '0')}</span>
+                      <div className="w-16 md:w-32 h-[2px] bg-white/10 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 h-full bg-[#D4AF37] transition-all duration-700 shadow-[0_0_15px_#D4AF37]" style={{ width: `${((team.current_clue) / totalClues) * 100}%` }}></div>
+                      </div>
+                      <span className="font-serif text-sm md:text-xl text-white/30">{totalClues.toString().padStart(2, '0')}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-4 md:gap-8 text-right">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/50 mb-1">Score</span>
+                      <span className="font-serif text-xl md:text-2xl text-[#D4AF37] drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">{team.score}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase text-white/50 mb-1">Hints</span>
+                      <span className="font-serif text-xl md:text-2xl text-[#FDFBF7]">{hintsRemaining}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Clue Interface */}
+                <div className={`w-full max-w-3xl transition-all duration-1000 mt-12 md:mt-0 ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                  <div className="flex flex-col items-center text-center">
+                    <div className="flex items-center gap-4 mb-4 md:mb-6 text-[#F3E5AB]">
+                      <span className="text-[10px] md:text-xs">✧</span>
+                      <span className="font-sans text-[10px] md:text-xs tracking-[0.4em] font-medium uppercase drop-shadow-md">
+                        {clue.title}
+                      </span>
+                      <span className="text-[10px] md:text-xs">✧</span>
+                    </div>
+
+                    <p className="font-[family-name:var(--font-cinzel-decorative)] text-[#FDFBF7] text-xl md:text-3xl lg:text-4xl leading-relaxed whitespace-pre-line mb-10 md:mb-16 drop-shadow-lg px-2">
+                      &ldquo;{clue.content}&rdquo;
+                    </p>
+
+                    <form onSubmit={handleAnswerSubmit} className="w-full max-w-lg mx-auto flex flex-col items-center px-4">
+                      <div className="relative w-full mb-6 md:mb-8">
+                        <input
+                          type="text"
+                          value={answerInput}
+                          onChange={(e) => setAnswerInput(e.target.value)}
+                          disabled={isTransitioning}
+                          placeholder="ENTER THE KEY..."
+                          className="w-full bg-transparent border-b border-white/20 pb-3 md:pb-4 text-center text-[#D4AF37] font-sans font-bold tracking-[0.2em] md:tracking-[0.3em] text-base md:text-lg uppercase placeholder-white/10 focus:outline-none focus:border-[#D4AF37] transition-all duration-300"
+                          autoComplete="off"
+                        />
+                        <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] shadow-[0_0_15px_#D4AF37] transition-all duration-500 ${answerInput.length > 0 ? 'w-full opacity-100' : 'w-0 opacity-0'}`}></div>
+                      </div>
+
+                      <div className="h-6 mb-6 md:mb-8">
+                        {feedback.message && (
+                          <div className={`text-[9px] md:text-[11px] tracking-[0.2em] md:tracking-[0.3em] uppercase font-bold transition-opacity duration-300 ${feedback.type === 'error' ? 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]' : 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]'}`}>
+                            {feedback.message}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col items-center gap-4 md:gap-6 w-full">
+                        <button type="submit" disabled={isTransitioning} className="group relative p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_40px_rgba(212,175,55,0.6)] btn-hover-effect transition-all duration-300 w-full md:w-auto">
+                          <div className="clip-game-button bg-premium-gold px-12 md:px-16 py-3.5 md:py-4 flex items-center justify-center gap-3 w-full">
+                            <span className="font-sans font-extrabold tracking-[0.2em] text-[11px] md:text-[13px] uppercase text-[#2B1B04]">Unlock</span>
+                          </div>
+                        </button>
+
+                        <div className="h-16 md:h-20 w-full flex justify-center items-center">
+                          {!showHint ? (
+                            <button type="button" onClick={handleUseHint} disabled={hintsRemaining === 0 || isTransitioning} className={`font-sans text-[9px] md:text-[10px] tracking-[0.2em] uppercase transition-all flex items-center gap-2 ${hintsRemaining > 0 ? 'text-white/40 hover:text-[#D4AF37]' : 'text-white/10 cursor-not-allowed'}`}>
+                              [ Request Hint ]
+                            </button>
+                          ) : (
+                            <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-md p-3 md:p-4 flex gap-3 md:gap-4 items-start w-full max-w-md animate-fade-in shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                              <span className="text-[#D4AF37] text-sm md:text-lg">💡</span>
+                              <p className="font-sans text-[10px] md:text-xs tracking-wide text-[#FDFBF7]/70 italic text-left leading-relaxed">
+                                {clue.hint}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* ========================================= */}
         {/* STATE 3: VICTORY SCREEN (Completed all clues) */}
+        {/* Note: Shown even if event is "ended" so they can see their victory! */}
         {/* ========================================= */}
         {team && !clue && (
           <div className="max-w-3xl animate-float text-center px-4 mt-20 md:mt-0">

@@ -4,38 +4,38 @@ import Navbar from "@/components/Navbar";
 
 const TIMELINE_EVENTS = [
   {
-    date: "August 25, 2026",
-    time: "10:00 AM",
-    title: "Registration Opens",
-    desc: "Gather your team and secure your spot. Spaces are limited.",
-    status: "past" // past, active, or future
+    date: "August 28, 2026",
+    time: "Before 7:30 PM",
+    title: "Registration & Initialization",
+    desc: "Complete your main registration (₹ 10 fee), join the WhatsApp group, and register your team on this portal to generate your 6-digit Secret Passcode.",
+    status: "active" // Active because registration is happening right now!
   },
   {
     date: "August 28, 2026",
-    time: "06:00 PM",
-    title: "The First Whisper",
-    desc: "A teaser clue drops. Solve it to earn early bonus points before the main hunt begins.",
-    status: "active" 
+    time: "07:30 PM",
+    title: "The Portal Unlocks",
+    desc: "The clock starts. The Game Terminal goes live. Enter your Secret Passcode to access your first clue and begin the hunt.",
+    status: "future" 
   },
   {
-    date: "September 01, 2026",
-    time: "09:00 AM",
-    title: "The Hunt Begins",
-    desc: "The main portal opens. The race across the open web to find Mahabali officially starts.",
+    date: "August 28, 2026",
+    time: "7:30 PM - 8:30 PM",
+    title: "The Open Web Race",
+    desc: "Race across Wikimedia, OpenStreetMap, and FOSS datasets. Solve clues to progress. Remember: relying on hints will reduce your score!",
     status: "future"
   },
   {
-    date: "September 03, 2026",
-    time: "11:59 PM",
-    title: "Leaderboard Freezes",
-    desc: "The blind phase begins. The leaderboard goes dark to keep the final hours suspenseful.",
+    date: "August 28, 2026",
+    time: "08:30 PM",
+    title: "The Trail Goes Cold",
+    desc: "The 60-minute window strictly closes. The game terminal locks, and final scores are calculated based on time and hint usage.",
     status: "future"
   },
   {
-    date: "September 04, 2026",
-    time: "04:00 PM",
+    date: "August 28, 2026",
+    time: "09:00 PM",
     title: "The King is Crowned",
-    desc: "The fastest team to complete the trail is announced and prizes are distributed.",
+    desc: "The final leaderboard is revealed. The top two teams win the ₹200 and ₹100 prize pool, and King Mahabali is finally found!",
     status: "future"
   }
 ];
@@ -64,7 +64,7 @@ export default function TimelinePage() {
             The Timeline
           </h1>
           <p className="font-sans text-sm md:text-lg text-[#FDFBF7]/90 max-w-2xl mx-auto tracking-widest drop-shadow-md uppercase">
-            Mark your calendars. The clock is ticking.
+            Mark your calendars. A 60-Minute Sprint.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export default function TimelinePage() {
           {/* Central Glowing Line */}
           <div className="absolute left-[28px] md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-[#D4AF37]/50 to-transparent transform md:-translate-x-1/2">
             {/* Bright animated highlight moving down the line */}
-            <div className="absolute top-1/4 w-full h-1/3 bg-gradient-to-b from-transparent via-[#FFF0B3] to-transparent animate-pulse shadow-[0_0_15px_#D4AF37]"></div>
+            <div className="absolute top-0 w-full h-1/4 bg-gradient-to-b from-transparent via-[#FFF0B3] to-transparent animate-pulse shadow-[0_0_15px_#D4AF37]"></div>
           </div>
 
           <div className="space-y-12 md:space-y-20">

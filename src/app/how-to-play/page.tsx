@@ -7,32 +7,32 @@ export default function HowToPlay() {
   const steps = [
     {
       number: "01",
-      title: "Register Your Team",
-      desc: "Head to the registration portal to form your alliance. Secure your spot and receive a unique 6-digit Secret Passcode. Guard it with your life.",
+      title: "Generate Your Passcode",
+      desc: "Before the hunt begins, register your team on this website. You will be assigned a unique 6-digit Secret Passcode. Save this code securely—it is your only key to enter the game.",
       icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
     },
     {
       number: "02",
-      title: "Access the Terminal",
-      desc: "Enter the Game portal and input your Secret Passcode. Our database tracks your progress securely, allowing you to pause, close your browser, and resume the hunt at any time.",
-      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+      title: "Enter the Terminal at 7:30 PM",
+      desc: "The hunt officially begins at 7:30 PM. Once the clock strikes, click 'Start The Hunt' and input your Secret Passcode to access your first clue and start the timer.",
+      icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
     },
     {
       number: "03",
       title: "Investigate the Open Web",
-      desc: "You will receive cryptographic clues. Leave the site and investigate open web resources like Wikimedia, OpenStreetMap, or image metadata to find the exact coordinates or names.",
+      desc: "You will face a series of digital mysteries. Leave the site and investigate open web resources like Wikimedia, OpenStreetMap, or image metadata to uncover the hidden keys.",
       icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" /></svg>
     },
     {
       number: "04",
-      title: "Submit the Key",
-      desc: "Return to the terminal and enter your discovered answer to unlock the next location. Stuck? You can request a hint, but doing so will reduce the points awarded for that clue.",
+      title: "Scoring & Hints",
+      desc: "Submit your discovered key to unlock the next level. A correct answer grants 100 points. Stuck? You can request a hint, but it will cost you—clues solved with a hint only award 50 points.",
       icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
     },
     {
       number: "05",
       title: "Top the Leaderboard",
-      desc: "Every second and every point counts. Be the fastest team to complete the entire trail, dominate the live leaderboard, and reclaim the King before Onam ends!",
+      desc: "Speed and accuracy are everything. The first team to solve all clues with the highest score wins the prize pool. The hunt officially concludes at 8:30 PM!",
       icon: <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
     }
   ];

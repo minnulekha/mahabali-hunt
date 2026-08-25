@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react"; // <-- Added Fragment here
 import { supabase } from "@/utils/supabase";
 import Link from "next/link";
 
@@ -26,8 +26,9 @@ type GameLog = {
   clues: { id: number; title: string };
 };
 
-const ADMIN_PASSCODE = "SUDO2026"; 
-const TOTAL_CLUES = 3; // Update this if you add more clues to the database!
+// Fetching secure password from environment variables!
+const ADMIN_PASSCODE = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || "SUDO2026"; 
+const TOTAL_CLUES = 3; 
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,8 +40,9 @@ export default function AdminPage() {
   const [logs, setLogs] = useState<GameLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
-  // State to force UI re-renders for the live playing timers
+  // States for UI
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
 
   // --- ADMIN LOGIN ---
   const handleLogin = (e: React.FormEvent) => {
@@ -65,7 +67,6 @@ export default function AdminPage() {
       if (teamsError) throw teamsError;
       if (teamsData) setTeams(teamsData);
 
-      // Updated query to fetch IDs so we can match logs to specific teams for the time calculator
       const { data: logsData, error: logsError } = await supabase
         .from("game_logs")
         .select(`
@@ -85,7 +86,26 @@ export default function AdminPage() {
     }
   };
 
-  // Auto-refresh data every 15s and update the live timer every 1s
+  // --- DELETE TEAM LOGIC ---
+  const handleDeleteTeam = async (teamId: string, teamName: string) => {
+    // 1. Trigger warning popup
+    const isConfirmed = window.confirm(`⚠️ WARNING: Are you sure you want to delete the test team "${teamName}"?\n\nThis will permanently erase their score, passcode, and audit logs. This cannot be undone.`);
+    
+    if (isConfirmed) {
+      setIsLoading(true);
+      try {
+        // 2. Delete from Supabase
+        const { error } = await supabase.from("teams").delete().eq("id", teamId);
+        if (error) throw error;
+        
+        // 3. Refresh Data
+        await fetchDashboardData();
+      } catch (err: any) {
+        alert("Failed to delete team: " + err.message);
+      }
+    }
+  };
+
   useEffect(() => {
     let dataInterval: NodeJS.Timeout;
     let timeInterval: NodeJS.Timeout;
@@ -100,17 +120,14 @@ export default function AdminPage() {
     };
   }, [isAuthenticated]);
 
-  // --- TIME CALCULATOR HELPER ---
   const calculateTimeTaken = (team: Team) => {
     const startTime = new Date(team.created_at).getTime();
     const hasFinished = team.current_clue > TOTAL_CLUES;
     let endTime = currentTime;
 
     if (hasFinished) {
-      // Find the exact timestamp of their final successful solve in the logs
       const teamLogs = logs.filter(log => log.teams?.id === team.id && log.action_type === 'SOLVED');
       if (teamLogs.length > 0) {
-        // Logs are ordered descending, so the first one is their latest solve
         endTime = new Date(teamLogs[0].created_at).getTime();
       }
     }
@@ -120,12 +137,7 @@ export default function AdminPage() {
     const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     const diffSecs = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-    const timeString = `${diffHrs}h ${diffMins}m ${diffSecs}s`;
-
-    return {
-      timeString,
-      hasFinished
-    };
+    return { timeString: `${diffHrs}h ${diffMins}m ${diffSecs}s`, hasFinished };
   };
 
   return (
@@ -162,7 +174,6 @@ export default function AdminPage() {
       ) : (
         <div className="flex flex-col min-h-screen">
           
-          {/* Admin Header */}
           <header className="bg-black border-b border-[#D4AF37]/20 px-4 md:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-0 z-50">
             <div className="flex items-center gap-4">
               <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]"></div>
@@ -174,7 +185,7 @@ export default function AdminPage() {
                 Teams Data
               </button>
               <button onClick={() => setActiveTab("logs")} className={`px-4 py-2 transition-colors whitespace-nowrap rounded ${activeTab === "logs" ? "text-black bg-[#D4AF37]" : "text-[#D4AF37] hover:bg-[#D4AF37]/10"}`}>
-                Audit Logs
+                Global Audit Logs
               </button>
               <button onClick={fetchDashboardData} className="px-3 py-2 text-white/50 hover:text-white border border-white/20 hover:border-white/50 ml-auto md:ml-4 rounded whitespace-nowrap">
                 ↻ Refresh
@@ -182,7 +193,6 @@ export default function AdminPage() {
             </div>
           </header>
 
-          {/* Main Dashboard Content */}
           <div className="flex-grow p-4 md:p-8 overflow-x-hidden">
             
             {isLoading && teams.length === 0 ? (
@@ -196,47 +206,92 @@ export default function AdminPage() {
                 {activeTab === "teams" && (
                   <div className="bg-black/40 border border-white/10 rounded-lg overflow-hidden shadow-2xl w-full">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse min-w-[900px]">
+                      <table className="w-full text-left border-collapse min-w-[950px]">
                         <thead>
                           <tr className="bg-[#D4AF37]/10 text-[10px] tracking-[0.2em] uppercase text-[#D4AF37]">
                             <th className="p-4 border-b border-[#D4AF37]/20 whitespace-nowrap">Team Name</th>
-                            <th className="p-4 border-b border-[#D4AF37]/20">Contact</th>
                             <th className="p-4 border-b border-[#D4AF37]/20 text-center">Score</th>
                             <th className="p-4 border-b border-[#D4AF37]/20 text-center">Clue</th>
                             <th className="p-4 border-b border-[#D4AF37]/20 text-center">Passcode</th>
                             <th className="p-4 border-b border-[#D4AF37]/20 text-right">Time Taken</th>
+                            <th className="p-4 border-b border-[#D4AF37]/20 text-center">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {teams.map((team) => {
                             const { timeString, hasFinished } = calculateTimeTaken(team);
+                            const isExpanded = expandedTeamId === team.id;
+                            const teamLogs = logs.filter(log => log.teams?.id === team.id);
                             
                             return (
-                              <tr key={team.id} className="border-b border-white/5 hover:bg-white/5 transition-colors text-xs text-white/80">
-                                <td className="p-4 font-bold text-white whitespace-nowrap">{team.team_name}</td>
-                                <td className="p-4 text-white/50 whitespace-nowrap">{team.captain_email}</td>
-                                <td className="p-4 text-center text-[#D4AF37] font-bold text-sm">{team.score}</td>
-                                <td className="p-4 text-center">
-                                  {hasFinished ? (
-                                    <span className="text-green-400 font-bold tracking-widest text-[10px] uppercase">Finished</span>
-                                  ) : (
-                                    team.current_clue
-                                  )}
-                                </td>
-                                <td className="p-4 text-center">
-                                  <span className="px-2 py-1 bg-red-900/30 text-red-400 border border-red-900/50 font-mono tracking-widest rounded">
-                                    {team.passcode}
-                                  </span>
-                                </td>
-                                <td className="p-4 text-right font-mono tracking-widest">
-                                  <div className="flex flex-col items-end">
-                                    <span className={hasFinished ? "text-green-400 font-bold" : "text-white"}>{timeString}</span>
-                                    <span className={`text-[9px] uppercase mt-1 ${hasFinished ? "text-green-400/50" : "text-yellow-500/50"}`}>
-                                      {hasFinished ? "Final Time" : "Playing"}
+                              <Fragment key={team.id}> {/* <-- FIX APPLIED HERE */}
+                                <tr className="border-b border-white/5 hover:bg-white/5 transition-colors text-xs text-white/80">
+                                  <td className="p-4 font-bold text-white whitespace-nowrap">
+                                    {team.team_name}
+                                    <div className="text-[9px] text-white/40 font-normal mt-1">{team.captain_email}</div>
+                                  </td>
+                                  <td className="p-4 text-center text-[#D4AF37] font-bold text-sm">{team.score}</td>
+                                  <td className="p-4 text-center">
+                                    {hasFinished ? <span className="text-green-400 font-bold tracking-widest text-[10px] uppercase">Finished</span> : team.current_clue}
+                                  </td>
+                                  <td className="p-4 text-center">
+                                    <span className="px-2 py-1 bg-red-900/30 text-red-400 border border-red-900/50 font-mono tracking-widest rounded">
+                                      {team.passcode}
                                     </span>
-                                  </div>
-                                </td>
-                              </tr>
+                                  </td>
+                                  <td className="p-4 text-right font-mono tracking-widest">
+                                    <div className="flex flex-col items-end">
+                                      <span className={hasFinished ? "text-green-400 font-bold" : "text-white"}>{timeString}</span>
+                                      <span className={`text-[9px] uppercase mt-1 ${hasFinished ? "text-green-400/50" : "text-yellow-500/50"}`}>
+                                        {hasFinished ? "Final Time" : "Playing"}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="p-4 text-center">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <button 
+                                        onClick={() => setExpandedTeamId(isExpanded ? null : team.id)}
+                                        className="px-3 py-1.5 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 rounded text-[10px] tracking-widest uppercase transition-colors"
+                                      >
+                                        {isExpanded ? "Close" : "History"}
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                                        className="px-3 py-1.5 bg-red-900/20 hover:bg-red-900/50 text-red-400 border border-red-900/30 hover:border-red-500 rounded text-[10px] tracking-widest uppercase transition-colors"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                                
+                                {/* EXPANDED TEAM HISTORY ROW */}
+                                {isExpanded && (
+                                  <tr className="bg-black/60 border-b border-white/5">
+                                    <td colSpan={6} className="p-4 md:p-6">
+                                      <div className="bg-[#0D2B1D]/50 border border-[#D4AF37]/20 rounded p-4">
+                                        <h4 className="text-[#D4AF37] text-[10px] tracking-[0.2em] uppercase mb-4 font-bold border-b border-[#D4AF37]/20 pb-2">Activity Log: {team.team_name}</h4>
+                                        {teamLogs.length === 0 ? (
+                                          <p className="text-white/40 text-xs italic">No actions recorded yet.</p>
+                                        ) : (
+                                          <ul className="space-y-2">
+                                            {teamLogs.map(log => (
+                                              <li key={log.id} className="flex justify-between items-center text-[10px] md:text-xs font-mono border-b border-white/5 pb-2">
+                                                <span className="text-white/50">{new Date(log.created_at).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
+                                                <span className={`px-2 py-0.5 rounded uppercase tracking-widest ${log.action_type === 'HINT_USED' ? 'bg-yellow-900/30 text-yellow-500' : 'bg-green-900/30 text-green-500'}`}>
+                                                  {log.action_type}
+                                                </span>
+                                                <span className="text-white/70 w-32 truncate">{log.clues?.title}</span>
+                                                <span className={log.points_awarded > 0 ? "text-[#D4AF37] font-bold" : "text-white/30"}>+{log.points_awarded} pts</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </Fragment>
                             );
                           })}
                         </tbody>
@@ -246,7 +301,7 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {/* --- AUDIT LOGS VIEW --- */}
+                {/* --- GLOBAL AUDIT LOGS VIEW --- */}
                 {activeTab === "logs" && (
                   <div className="bg-black/40 border border-white/10 rounded-lg overflow-hidden shadow-2xl w-full">
                     <div className="overflow-x-auto">
