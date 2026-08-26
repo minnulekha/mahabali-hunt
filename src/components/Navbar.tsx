@@ -78,7 +78,7 @@ export default function Navbar() {
           ))}
           <div className="pt-2">
             <Link
-              href="#register"
+              href="/about"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-center w-full py-2.5 text-xs tracking-widest font-bold uppercase text-[#0D2B1D] bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] rounded-md"
             >
