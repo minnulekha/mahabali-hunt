@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react"; // <-- Added Fragment here
+import { useState, useEffect, Fragment } from "react"; 
 import { supabase } from "@/utils/supabase";
 import Link from "next/link";
 
@@ -28,7 +28,7 @@ type GameLog = {
 
 // Fetching secure password from environment variables!
 const ADMIN_PASSCODE = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || "SUDO2026"; 
-const TOTAL_CLUES = 3; 
+const TOTAL_CLUES = 5; // <-- UPDATED TO 5 CLUES
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -89,7 +89,7 @@ export default function AdminPage() {
   // --- DELETE TEAM LOGIC ---
   const handleDeleteTeam = async (teamId: string, teamName: string) => {
     // 1. Trigger warning popup
-    const isConfirmed = window.confirm(`⚠️ WARNING: Are you sure you want to delete the test team "${teamName}"?\n\nThis will permanently erase their score, passcode, and audit logs. This cannot be undone.`);
+    const isConfirmed = window.confirm(`⚠️ WARNING: Are you sure you want to delete the team "${teamName}"?\n\nThis will permanently erase their score, passcode, and audit logs. This cannot be undone.`);
     
     if (isConfirmed) {
       setIsLoading(true);
@@ -224,7 +224,7 @@ export default function AdminPage() {
                             const teamLogs = logs.filter(log => log.teams?.id === team.id);
                             
                             return (
-                              <Fragment key={team.id}> {/* <-- FIX APPLIED HERE */}
+                              <Fragment key={team.id}>
                                 <tr className="border-b border-white/5 hover:bg-white/5 transition-colors text-xs text-white/80">
                                   <td className="p-4 font-bold text-white whitespace-nowrap">
                                     {team.team_name}
