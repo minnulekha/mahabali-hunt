@@ -42,10 +42,10 @@ const TIMELINE_EVENTS = [
 
 export default function TimelinePage() {
   return (
-    <main className="min-h-screen bg-[#0D2B1D] bg-[url('/BG.png')] bg-cover bg-center bg-fixed text-[#FDFBF7] font-sans">
+    <main className="min-h-screen bg-black bg-[url('/BG.png')] bg-cover bg-center bg-fixed text-[#FDFBF7] font-sans">
       
-      {/* Cinematic Ambient Overlay */}
-      <div className="fixed inset-0 bg-gradient-to-b from-[#0D2B1D]/90 via-black/80 to-[#0D2B1D]/95 z-0 pointer-events-none"></div>
+      {/* Pure Black Cinematic Ambient Overlay */}
+      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/95 z-0 pointer-events-none"></div>
 
       <div className="relative z-50">
         <Navbar />
@@ -85,7 +85,8 @@ export default function TimelinePage() {
               const isPast = event.status === "past";
               const isActive = event.status === "active";
               
-              const nodeColor = isActive ? "bg-[#FFF0B3] shadow-[0_0_20px_#FFF0B3]" : isPast ? "bg-[#D4AF37]/50" : "bg-[#0D2B1D] border-2 border-[#D4AF37]/50";
+              // Removed the green colors from the node indicators
+              const nodeColor = isActive ? "bg-[#FFF0B3] shadow-[0_0_20px_#FFF0B3]" : isPast ? "bg-[#D4AF37]/50" : "bg-black border-2 border-[#D4AF37]/50";
               const cardOpacity = isPast ? "opacity-60 grayscale-[30%]" : "opacity-100";
               const glowEffect = isActive ? "shadow-[0_0_30px_rgba(212,175,55,0.3)] border-[#D4AF37]" : "shadow-xl border-[#D4AF37]/20";
 
@@ -96,7 +97,7 @@ export default function TimelinePage() {
                   <div className="hidden md:block w-5/12"></div>
                   
                   {/* Timeline Node (The dot on the line) */}
-                  <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-8 h-8 rounded-full bg-[#0D2B1D] border border-[#D4AF37]/30 flex items-center justify-center z-20">
+                  <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-8 h-8 rounded-full bg-black border border-[#D4AF37]/30 flex items-center justify-center z-20">
                     <div className={`w-3 h-3 rounded-full ${nodeColor} transition-all duration-300 ${isActive ? 'animate-pulse' : ''}`}></div>
                   </div>
 

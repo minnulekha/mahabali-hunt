@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar";
 import { useState } from "react";
 import { supabase } from "@/utils/supabase";
+import Link from "next/link"; 
 
 export default function AboutPage() {
   // Form State
@@ -17,10 +18,41 @@ export default function AboutPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [generatedPasscode, setGeneratedPasscode] = useState("");
+  const [isCopied, setIsCopied] = useState(false); // Copy button state
 
   // Simple function to generate a 6-character alphanumeric passcode
   const generatePasscode = () => {
     return Math.random().toString(36).slice(2, 8).toUpperCase();
+  };
+
+  // --- UPDATED COPY TO CLIPBOARD FUNCTION ---
+  const handleCopy = () => {
+    // 1. Try modern clipboard API first (Works on HTTPS and localhost)
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(generatedPasscode);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } 
+    // 2. Fallback for testing on local network IPs via HTTP
+    else {
+      const textArea = document.createElement("textarea");
+      textArea.value = generatedPasscode;
+      // Move text area out of viewport so it's invisible
+      textArea.style.position = "absolute";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy text: ", err);
+      } finally {
+        textArea.remove();
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,7 +122,7 @@ export default function AboutPage() {
               Join us for an exciting online mystery hunt where teams race through the open web, following a trail of hidden clues across Wikimedia, OpenStreetMap, digital archives, and FOSS-based puzzles.
             </p>
             
-            {/* UPDATED EVENT DETAILS BOX WITH ELEGANT SVG ICONS */}
+            {/* EVENT DETAILS BOX */}
             <div className="border-l-2 border-[#D4AF37] pl-4 md:pl-6 py-2 mt-6 lg:mt-8 bg-[#D4AF37]/5 space-y-4">
               <p className="text-[#D4AF37] font-bold text-xs md:text-sm tracking-[0.2em] uppercase">Event Details</p>
               
@@ -241,16 +273,41 @@ export default function AboutPage() {
                 Welcome to the hunt, <strong>{teamName}</strong>. Save your secure team passcode below. You will need it to enter the game portal on August 28th.
               </p>
               
-              <div className="bg-[#D4AF37]/10 border border-[#D4AF37] p-6 rounded-lg shadow-[0_0_15px_rgba(212,175,55,0.2)] w-full max-w-sm">
-                <p className="text-[10px] text-[#D4AF37] tracking-[0.3em] uppercase mb-2">Team Passcode</p>
-                <p className="font-mono text-3xl md:text-4xl font-bold tracking-[0.2em] text-[#FDFBF7] drop-shadow-md">
-                  {generatedPasscode}
-                </p>
+              {/* PASSCODE BOX WITH COPY BUTTON */}
+              <div className="bg-[#D4AF37]/10 border border-[#D4AF37] p-5 md:p-6 rounded-lg shadow-[0_0_15px_rgba(212,175,55,0.2)] w-full max-w-sm group">
+                <p className="text-[10px] text-[#D4AF37] tracking-[0.3em] uppercase mb-3">Team Passcode</p>
+                <div className="flex items-center justify-center gap-4">
+                  <p className="font-mono text-3xl md:text-4xl font-bold tracking-[0.2em] text-[#FDFBF7] drop-shadow-md">
+                    {generatedPasscode}
+                  </p>
+                  <button 
+                    onClick={handleCopy} 
+                    className="p-2 md:p-2.5 bg-white/5 hover:bg-[#D4AF37]/20 border border-white/10 hover:border-[#D4AF37] rounded transition-all flex-shrink-0" 
+                    title="Copy Passcode"
+                  >
+                    {isCopied ? (
+                      <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" /></svg>
+                    )}
+                  </button>
+                </div>
               </div>
               
-              <p className="mt-8 text-[10px] md:text-xs text-red-400/80 tracking-widest uppercase font-bold max-w-xs mx-auto">
+              <p className="mt-4 mb-10 text-[9px] md:text-[10px] text-red-400/80 tracking-widest uppercase font-bold max-w-xs mx-auto">
                 ⚠️ Do not lose this code. You cannot recover it.
               </p>
+
+              {/* START THE HUNT BUTTON */}
+              <Link href="/game" className="group relative p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_30px_rgba(212,175,55,0.4)] animate-heartbeat btn-hover-effect transition-all duration-200 inline-block w-full sm:w-auto">
+                <div className="clip-game-button bg-premium-gold px-12 py-4 flex items-center justify-center gap-3">
+                  <span className="font-sans font-extrabold tracking-widest text-[12px] md:text-[13px] uppercase text-[#2B1B04] drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
+                    Start The Hunt
+                  </span>
+                  <svg className="w-5 h-5 text-[#2B1B04] group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </div>
+              </Link>
+
             </div>
           )}
 

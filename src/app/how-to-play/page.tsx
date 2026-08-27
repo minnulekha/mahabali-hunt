@@ -58,9 +58,9 @@ export default function HowToPlay() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#0D2B1D] bg-[url('/BG.png')] bg-cover bg-center bg-fixed text-[#FDFBF7]">
-      {/* Ambient Dark Overlay */}
-      <div className="fixed inset-0 bg-gradient-to-b from-[#0D2B1D]/80 via-black/60 to-[#0D2B1D]/90 z-0"></div>
+    <main className="min-h-screen bg-black bg-[url('/BG.png')] bg-cover bg-center bg-fixed text-[#FDFBF7]">
+      {/* Pure Black Cinematic Overlay */}
+      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/95 z-0"></div>
 
       <div className="relative z-50">
         <Navbar />
@@ -87,7 +87,7 @@ export default function HowToPlay() {
           {steps.map((step, index) => (
             <div 
               key={index} 
-              className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-[#0D2B1D]/90 to-black/90 backdrop-blur-xl border border-[#D4AF37]/20 hover:border-[#D4AF37]/60 transition-all duration-500 p-8 md:p-12 shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+              className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-black/80 to-black/95 backdrop-blur-xl border border-[#D4AF37]/20 hover:border-[#D4AF37]/60 transition-all duration-500 p-8 md:p-12 shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
             >
               {/* Background Watermark Number */}
               <div className="absolute -bottom-12 -right-8 text-[150px] md:text-[200px] leading-none font-serif font-bold text-[#D4AF37] opacity-5 group-hover:opacity-15 transition-opacity duration-700 pointer-events-none select-none">

@@ -20,8 +20,8 @@ const EXPLORE_LINKS: Record<number, string> = {
   1: "https://stellarium-web.org/",
   2: "https://www.openstreetmap.org/",
   3: "https://commons.wikimedia.org/",
-  4: "https://www.openstreetmap.org/",
-  5: "#" // Final destination (they will figure this out)
+  4: "https://www.wikidata.org/", 
+  // Clue 5 requires no web link, handled in UI
 };
 
 export default function GamePage() {
@@ -144,7 +144,6 @@ export default function GamePage() {
   };
 
   const handleUseHint = async () => {
-    // --- UPDATED WARNING MESSAGE ---
     const confirmHint = window.confirm(`WARNING: Using this hint will deduct 50 points from this clue's total. \n\nRemember, ONLY 3 HINTS can be used throughout the entire game! (You have ${hintsRemaining} left).\n\nDo you wish to proceed?`);
     
     if (confirmHint && hintsRemaining > 0 && !showHint && team && clue) {
@@ -170,7 +169,7 @@ export default function GamePage() {
       {/* GLOBAL BACKGROUND - The Wooden Desk */}
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[url('/wooden-desk.png')] bg-cover bg-center"></div>
-        <div className="absolute inset-0 bg-black/60 pointer-events-none"></div> {/* Cinematic darkening */}
+        <div className="absolute inset-0 bg-black/60 pointer-events-none"></div>
       </div>
       
       <div className="relative z-50">
@@ -334,53 +333,67 @@ export default function GamePage() {
                   </div>
                 </div>
 
-                {/* THE PARCHMENT PAPER CONTAINER */}
-                <div className="relative w-full max-w-2xl mx-auto aspect-auto md:min-h-[650px] flex flex-col items-center justify-start p-10 md:p-24 bg-[url('/parchment.png')] bg-[length:100%_100%] bg-no-repeat shadow-[0_20px_50px_rgba(0,0,0,0.8)] filter drop-shadow-2xl">
+                {/* THE PARCHMENT PAPER CONTAINER - Increased horizontal padding on mobile */}
+                <div className="relative w-full max-w-2xl mx-auto aspect-auto min-h-[500px] md:min-h-[650px] flex flex-col items-center justify-start pt-16 pb-12 px-10 sm:px-16 md:p-24 bg-[url('/parchment.png')] bg-[length:100%_100%] bg-no-repeat shadow-[0_20px_50px_rgba(0,0,0,0.8)] filter drop-shadow-2xl">
                   
-                  <div className="text-center w-full mt-4 md:mt-0">
-                    <div className="flex items-center justify-center gap-3 mb-6 text-[#5c3e21]">
-                      <span className="text-xs">⚜</span>
-                      <h3 className="font-sans text-[11px] md:text-xs tracking-[0.3em] font-bold uppercase border-b border-[#5c3e21]/30 pb-1">
+                  {/* Constrained text container so it never overlaps the drawn edges */}
+                  <div className="text-center w-full max-w-[85%] md:max-w-none mx-auto mt-4 md:mt-0 flex flex-col items-center">
+                    
+                    <div className="flex items-center justify-center gap-2 md:gap-3 mb-6 text-[#5c3e21] w-full">
+                      <span className="text-[10px] md:text-xs">⚜</span>
+                      <h3 className="font-sans text-[9px] md:text-xs tracking-[0.15em] md:tracking-[0.3em] font-bold uppercase border-b border-[#5c3e21]/30 pb-1 text-center leading-relaxed">
                         {clue.title}
                       </h3>
-                      <span className="text-xs">⚜</span>
+                      <span className="text-[10px] md:text-xs">⚜</span>
                     </div>
 
-                    <p className="font-[family-name:var(--font-cinzel-decorative)] text-[#2B1B04] text-lg md:text-2xl leading-loose whitespace-pre-line mb-10 px-2 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]">
+                    {/* Adjusted text sizing and line-height for better mobile wrapping */}
+                    <p className="font-[family-name:var(--font-cinzel-decorative)] text-[#2B1B04] text-[15px] sm:text-lg md:text-2xl leading-relaxed md:leading-loose whitespace-pre-line mb-8 md:mb-10 px-1 md:px-2 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]">
                       {clue.content}
                     </p>
                     
-                    {/* BUTTON 1: EXPLORE THE TRAIL */}
-                    <a 
-                      href={EXPLORE_LINKS[clue.id] || "#"} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-8 py-3 mb-10 border-2 border-[#5c3e21] text-[#2B1B04] hover:bg-[#5c3e21] hover:text-[#F3E5AB] font-sans font-bold tracking-[0.2em] text-[10px] md:text-xs uppercase transition-all duration-300 rounded shadow-md"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" /></svg>
-                      Investigate the Web
-                    </a>
+                    {/* BUTTON 1: EXPLORE THE TRAIL OR "NO WEB" INDICATOR */}
+                    {clue.id === 5 ? (
+                      <div className="inline-flex items-center gap-2 px-4 md:px-8 py-2 md:py-3 mb-8 md:mb-10 border-2 border-[#5c3e21]/30 text-[#5c3e21]/70 font-sans font-bold tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase rounded cursor-not-allowed select-none text-center">
+                        <svg className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                        <span>No Web To Investigate</span>
+                      </div>
+                    ) : (
+                      <a 
+                        href={EXPLORE_LINKS[clue.id] || "#"} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 px-4 md:px-8 py-2 md:py-3 mb-8 md:mb-10 border-2 border-[#5c3e21] text-[#2B1B04] hover:bg-[#5c3e21] hover:text-[#F3E5AB] font-sans font-bold tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase transition-all duration-300 rounded shadow-md text-center"
+                      >
+                        <svg className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" />
+                        </svg>
+                        <span>Investigate the Web</span>
+                      </a>
+                    )}
 
-                    <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#5c3e21]/30 to-transparent mb-8"></div>
+                    <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#5c3e21]/30 to-transparent mb-6 md:mb-8"></div>
 
                     {/* ANSWER FORM */}
                     <form onSubmit={handleAnswerSubmit} className="w-full flex flex-col items-center">
                       
-                      <div className="relative w-full max-w-sm mb-4">
+                      <div className="relative w-full max-w-[200px] md:max-w-sm mb-4 mx-auto">
                         <input
                           type="text"
                           value={answerInput}
                           onChange={(e) => setAnswerInput(e.target.value)}
                           disabled={isSubmitting}
-                          placeholder="ENTER THE SECRET KEY..."
-                          className="w-full bg-transparent border-b-2 border-[#5c3e21]/50 pb-2 text-center text-[#2B1B04] font-serif font-bold tracking-[0.2em] text-sm md:text-lg uppercase placeholder-[#5c3e21]/40 focus:outline-none focus:border-[#5c3e21] transition-all duration-300"
+                          placeholder="ENTER KEY..."
+                          className="w-full bg-transparent border-b-2 border-[#5c3e21]/50 pb-2 text-center text-[#2B1B04] font-serif font-bold tracking-[0.1em] md:tracking-[0.2em] text-sm md:text-lg uppercase placeholder-[#5c3e21]/50 focus:outline-none focus:border-[#5c3e21] transition-all duration-300"
                           autoComplete="off"
                         />
                       </div>
 
-                      <div className="h-6 mb-4">
+                      <div className="h-6 mb-4 w-full">
                         {feedback.message && (
-                          <div className={`text-[10px] tracking-[0.2em] uppercase font-bold transition-opacity duration-300 ${feedback.type === 'error' ? 'text-red-700' : 'text-green-800'}`}>
+                          <div className={`text-[9px] md:text-[10px] tracking-[0.1em] md:tracking-[0.2em] uppercase font-bold transition-opacity duration-300 ${feedback.type === 'error' ? 'text-red-700' : 'text-green-800'}`}>
                             {feedback.message}
                           </div>
                         )}
@@ -389,26 +402,26 @@ export default function GamePage() {
                       <button 
                         type="submit" 
                         disabled={isSubmitting || !answerInput} 
-                        className="bg-[#2B1B04] hover:bg-[#1a1002] disabled:opacity-50 text-[#D4AF37] px-10 py-3 font-sans font-bold tracking-[0.2em] text-[10px] md:text-xs uppercase rounded shadow-lg transition-all duration-300 mb-6"
+                        className="bg-[#2B1B04] hover:bg-[#1a1002] disabled:opacity-50 text-[#D4AF37] px-6 md:px-10 py-2.5 md:py-3 font-sans font-bold tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase rounded shadow-lg transition-all duration-300 mb-6"
                       >
                         Submit Answer
                       </button>
 
                       {/* HINT SECTION */}
-                      <div className="w-full flex justify-center mt-2 pb-8 md:pb-0">
+                      <div className="w-full flex justify-center mt-0 md:mt-2 pb-6 md:pb-0">
                         {!showHint ? (
                           <button 
                             type="button" 
                             onClick={handleUseHint} 
                             disabled={hintsRemaining === 0 || isSubmitting} 
-                            className={`font-sans text-[9px] tracking-[0.2em] uppercase transition-all ${hintsRemaining > 0 ? 'text-[#5c3e21]/70 hover:text-red-700 font-bold' : 'text-[#5c3e21]/30 cursor-not-allowed'}`}
+                            className={`font-sans text-[8px] md:text-[9px] tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all ${hintsRemaining > 0 ? 'text-[#5c3e21]/70 hover:text-red-700 font-bold' : 'text-[#5c3e21]/30 cursor-not-allowed'}`}
                           >
-                            [ Request Hint (-50 Points) ]
+                            [ Request Hint (-50 Pts) ]
                           </button>
                         ) : (
-                          <div className="bg-[#5c3e21]/10 border border-[#5c3e21]/30 rounded p-4 max-w-sm text-left">
-                            <span className="text-[#5c3e21] font-bold text-[10px] tracking-widest uppercase mb-1 block">💡 Discovered Hint</span>
-                            <p className="font-serif text-[11px] md:text-sm text-[#2B1B04] italic leading-relaxed">
+                          <div className="bg-[#5c3e21]/10 border border-[#5c3e21]/30 rounded p-3 md:p-4 max-w-sm text-left">
+                            <span className="text-[#5c3e21] font-bold text-[9px] md:text-[10px] tracking-widest uppercase mb-1 block">💡 Discovered Hint</span>
+                            <p className="font-serif text-[10px] md:text-sm text-[#2B1B04] italic leading-relaxed">
                               {clue.hint}
                             </p>
                           </div>
