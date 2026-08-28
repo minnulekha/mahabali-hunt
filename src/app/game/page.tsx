@@ -10,12 +10,10 @@ type Team = { id: string; team_name: string; score: number; current_clue: number
 type Clue = { id: number; title: string; content: string; answer: string; hint: string };
 
 // --- EVENT TIMESTAMPS (IST) ---
-const EVENT_START = new Date('2026-08-26T19:30:00+05:30').getTime();
+const EVENT_START = new Date('2026-08-28T19:30:00+05:30').getTime();
 const EVENT_END = new Date('2026-08-28T20:30:00+05:30').getTime();
 const TOTAL_CLUES = 5;
 
-// --- CLUE URL MAPPING ---
-// Maps the Clue ID to the specific open web resource they need to investigate
 // --- CLUE URL MAPPING ---
 // Maps the Clue ID to the specific open web resource they need to investigate
 const EXPLORE_LINKS: Record<number, string> = {
@@ -24,12 +22,12 @@ const EXPLORE_LINKS: Record<number, string> = {
   3: "https://stellarium-web.org/",       // Clue 3: Star magnitude
   4: "https://www.openstreetmap.org/",    // Clue 4: Way ID
   // Clue 5 requires no web link, handled in UI
-
 };
 
 export default function GamePage() {
   // Time & View State
   const [timeStatus, setTimeStatus] = useState<"loading" | "waiting" | "active" | "ended">("loading");
+  const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number, seconds: number } | null>(null);
   const [showMapTransition, setShowMapTransition] = useState(false);
 
   // Authentication State
@@ -46,16 +44,28 @@ export default function GamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; type: "error" | "success" | null }>({ message: "", type: null });
 
-  // --- TIME LOCK LOGIC ---
+  // --- TIME LOCK & COUNTDOWN LOGIC ---
   useEffect(() => {
     const checkTime = () => {
       const now = Date.now();
+      
       if (now < EVENT_START) {
         setTimeStatus("waiting");
+        
+        // Calculate the countdown
+        const diffMs = EVENT_START - now;
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        
+        setTimeLeft({ days, hours, minutes, seconds });
       } else if (now >= EVENT_START && now < EVENT_END) {
         setTimeStatus("active");
+        setTimeLeft(null); // Clear timer once active
       } else {
         setTimeStatus("ended");
+        setTimeLeft(null);
       }
     };
 
@@ -185,18 +195,48 @@ export default function GamePage() {
         {/* STATE 0: WAITING FOR EVENT TO START       */}
         {/* ========================================= */}
         {timeStatus === "waiting" && (
-          <div className="max-w-xl text-center px-4 animate-float bg-black/60 backdrop-blur-md p-10 rounded-xl border border-[#D4AF37]/30 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
-            <div className="w-20 h-20 mx-auto rounded-full border border-red-500/50 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(255,0,0,0.3)]">
-              <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="max-w-xl text-center px-4 md:px-10 py-10 animate-float bg-black/60 backdrop-blur-md rounded-xl border border-[#D4AF37]/30 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-full border border-red-500/50 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(255,0,0,0.3)]">
+              <svg className="w-8 h-8 md:w-10 md:h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
               </svg>
             </div>
             <h2 className="font-serif text-3xl md:text-5xl text-red-500 mb-4 tracking-widest uppercase drop-shadow-md">
               Terminal Locked
             </h2>
-            <p className="font-sans text-xs md:text-sm text-white/70 tracking-[0.2em] leading-loose max-w-md mx-auto">
+            <p className="font-sans text-xs md:text-sm text-white/70 tracking-[0.2em] leading-loose max-w-md mx-auto mb-8">
               The hunt has not yet begun. The access terminal will automatically unlock at exactly <strong className="text-[#D4AF37]">7:30 PM IST</strong> on August 28th.
             </p>
+
+            {/* --- NEW LIVE COUNTDOWN TIMER --- */}
+            {timeLeft && (
+              <div className="bg-black/50 border border-white/10 rounded-lg p-6 flex justify-center items-center gap-4 md:gap-6 text-[#D4AF37] font-mono text-2xl md:text-4xl shadow-inner">
+                {timeLeft.days > 0 && (
+                  <>
+                    <div className="flex flex-col items-center w-12 md:w-16">
+                      <span className="font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">{timeLeft.days.toString().padStart(2, '0')}</span>
+                      <span className="text-[8px] md:text-[9px] tracking-[0.3em] font-sans text-white/40 uppercase mt-2">Days</span>
+                    </div>
+                    <span className="text-white/20 pb-4 animate-pulse">:</span>
+                  </>
+                )}
+                <div className="flex flex-col items-center w-12 md:w-16">
+                  <span className="font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                  <span className="text-[8px] md:text-[9px] tracking-[0.3em] font-sans text-white/40 uppercase mt-2">Hours</span>
+                </div>
+                <span className="text-white/20 pb-4 animate-pulse">:</span>
+                <div className="flex flex-col items-center w-12 md:w-16">
+                  <span className="font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                  <span className="text-[8px] md:text-[9px] tracking-[0.3em] font-sans text-white/40 uppercase mt-2">Mins</span>
+                </div>
+                <span className="text-white/20 pb-4 animate-pulse">:</span>
+                <div className="flex flex-col items-center w-12 md:w-16">
+                  <span className="font-bold drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+                  <span className="text-[8px] md:text-[9px] tracking-[0.3em] font-sans text-white/40 uppercase mt-2">Secs</span>
+                </div>
+              </div>
+            )}
+            
           </div>
         )}
 
