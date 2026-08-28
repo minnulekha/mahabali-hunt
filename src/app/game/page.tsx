@@ -16,12 +16,15 @@ const TOTAL_CLUES = 5;
 
 // --- CLUE URL MAPPING ---
 // Maps the Clue ID to the specific open web resource they need to investigate
+// --- CLUE URL MAPPING ---
+// Maps the Clue ID to the specific open web resource they need to investigate
 const EXPLORE_LINKS: Record<number, string> = {
-  1: "https://stellarium-web.org/",
-  2: "https://www.openstreetmap.org/",
-  3: "https://commons.wikimedia.org/",
-  4: "https://www.wikidata.org/", 
+  1: "https://www.wikidata.org/",         // Clue 1: Vamana
+  2: "https://commons.wikimedia.org/",    // Clue 2: Oberon Mall
+  3: "https://stellarium-web.org/",       // Clue 3: Star magnitude
+  4: "https://www.openstreetmap.org/",    // Clue 4: Way ID
   // Clue 5 requires no web link, handled in UI
+
 };
 
 export default function GamePage() {
