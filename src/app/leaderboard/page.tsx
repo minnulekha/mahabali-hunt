@@ -10,6 +10,7 @@ type Team = {
   team_name: string;
   score: number;
   current_clue: number;
+  finishTime?: number; 
 };
 
 export default function LeaderboardPage() {
@@ -27,22 +28,54 @@ export default function LeaderboardPage() {
         setIsRevealed(revealed);
 
         // 2. Fetch all teams
-        const { data, error } = await supabase.from("teams").select("id, team_name, score, current_clue");
-        if (error) throw error;
+        const { data: teamsData, error: teamsError } = await supabase.from("teams").select("id, team_name, score, current_clue");
+        if (teamsError) throw teamsError;
         
-        if (data) {
+        // 3. Fetch Game Logs to calculate EXACT finish times for tie-breaking
+        const { data: logsData } = await supabase.from("game_logs").select("team_id, created_at").eq("action_type", "SOLVED");
+
+        if (teamsData) {
+          // Map the finish time to each team
+          const enrichedTeams = teamsData.map(team => {
+            const myLogs = logsData?.filter(l => l.team_id === team.id) || [];
+            // Find the latest SOLVED timestamp for this team. If none, use current time as a fallback.
+            const finishTime = myLogs.length > 0 
+              ? Math.max(...myLogs.map(l => new Date(l.created_at).getTime()))
+              : Date.now();
+            
+            return { ...team, finishTime };
+          });
+
           if (revealed) {
-            // GRAND REVEAL: Sort everyone entirely by score, showing the true victors!
-            data.sort((a, b) => b.score - a.score);
-            setTeams(data);
+            // GRAND REVEAL LOGIC
+            enrichedTeams.sort((a, b) => {
+              const aFinished = a.current_clue > 5;
+              const bFinished = b.current_clue > 5;
+
+              // Priority 1: Did they finish the game? (Finished teams ALWAYS rank higher)
+              if (aFinished && !bFinished) return -1;
+              if (!aFinished && bFinished) return 1;
+
+              // Priority 2: Score (Highest wins)
+              if (b.score !== a.score) {
+                return b.score - a.score; 
+              }
+              
+              // Priority 3: Tie-breaker! Time taken (Earliest wins)
+              return (a.finishTime || 0) - (b.finishTime || 0); 
+            });
+            setTeams(enrichedTeams);
           } else {
             // MYSTERY MODE: Filter out teams that have finished and scramble them
-            const finishedTeams = data.filter(t => t.current_clue > 5);
+            const finishedTeams = enrichedTeams.filter(t => t.current_clue > 5);
             finishedTeams.sort((a, b) => a.team_name.localeCompare(b.team_name));
 
-            // Filter out active teams and sort them by SCORE (Descending)
-            const activeTeams = data.filter(t => t.current_clue <= 5);
-            activeTeams.sort((a, b) => b.score - a.score);
+            // Filter out active teams and sort them by SCORE, then TIME
+            const activeTeams = enrichedTeams.filter(t => t.current_clue <= 5);
+            activeTeams.sort((a, b) => {
+              if (b.score !== a.score) return b.score - a.score;
+              return (a.finishTime || 0) - (b.finishTime || 0);
+            });
 
             setTeams([...finishedTeams, ...activeTeams]);
             setFinishedCount(finishedTeams.length);
@@ -56,7 +89,7 @@ export default function LeaderboardPage() {
     };
 
     fetchLeaderboard();
-    const interval = setInterval(fetchLeaderboard, 10000); // Check every 10s for the reveal!
+    const interval = setInterval(fetchLeaderboard, 10000); // Check every 10s
     return () => clearInterval(interval);
   }, []);
 
