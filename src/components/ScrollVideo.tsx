@@ -159,21 +159,27 @@ export default function ScrollVideo() {
           {/* --- THE TWO BUTTON LAYOUT --- */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full max-w-xs sm:max-w-none">
             
-            <Link href="/game" className="group w-full sm:w-auto p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_40px_rgba(212,175,55,0.4)] animate-heartbeat btn-hover-effect transition-all duration-200 ease-out">
+            {/* FIRST BUTTON: Register -> /about */}
+            <Link href="/about" className="group w-full sm:w-auto p-[2px] clip-game-button bg-gradient-to-b from-[#FFF0B3] to-[#8C6216] shadow-[0_0_40px_rgba(212,175,55,0.4)] animate-heartbeat btn-hover-effect transition-all duration-200 ease-out">
               <div className="clip-game-button bg-premium-gold px-8 sm:px-10 md:px-12 py-3.5 flex items-center justify-center gap-3 w-full">
                 <span className="font-sans font-extrabold tracking-widest text-[11px] md:text-[13px] uppercase text-[#2B1B04] drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
-                  Start The Hunt
+                  Register
                 </span>
-                <svg className="w-4 h-4 text-[#2B1B04] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                <svg className="w-4 h-4 text-[#2B1B04] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </Link>
             
-            <Link href="/how-to-play" className="group w-full sm:w-auto p-[2px] clip-game-button bg-gradient-to-b from-[#D4AF37] to-[#7A5C13] shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-heartbeat btn-hover-effect transition-all duration-200 ease-out" style={{ animationDelay: '0.2s' }}>
+            {/* SECOND BUTTON: Start The Hunt -> /game */}
+            <Link href="/game" className="group w-full sm:w-auto p-[2px] clip-game-button bg-gradient-to-b from-[#D4AF37] to-[#7A5C13] shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-heartbeat btn-hover-effect transition-all duration-200 ease-out" style={{ animationDelay: '0.2s' }}>
               <div className="clip-game-button bg-premium-glass px-8 sm:px-10 md:px-12 py-3.5 flex items-center justify-center gap-3 w-full">
                 <span className="font-sans font-bold tracking-widest text-[11px] md:text-[13px] uppercase text-[#FDFBF7] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                  How to Play
+                  Start The Hunt
                 </span>
-                <span className="border-2 border-[#D4AF37] rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-[#D4AF37] shadow-[0_0_5px_rgba(212,175,55,0.5)]">?</span>
+                <svg className="w-4 h-4 text-[#D4AF37] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </Link>
 
